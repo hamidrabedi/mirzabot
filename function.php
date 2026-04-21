@@ -1681,7 +1681,7 @@ function createInvoice($amount)
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
-        CURLOPT_URL => 'https://pay.melorinabeauty.ir/api/factor/create',
+        CURLOPT_URL => 'https://pay.melorinabeauty.com/api/factor/create',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,

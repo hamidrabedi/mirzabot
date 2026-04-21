@@ -57,7 +57,7 @@ if ($StatusPayment == 100) {
         "hashid" => $invoice_id,
     ];
     curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://tetra98.ir/api/verify",
+        CURLOPT_URL => "https://tetra98.com/api/verify",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
