@@ -530,7 +530,7 @@ function rate_arze()
     if (!empty($matches[1])) {
         $requestsusd = str_replace(',', '', $matches[1]);
     }
-    $arze_rate['USD'] = intval($requestsusd['result']['symbols']['USDTTMN']['stats']['lastPrice']);
+    $arze_rate['USD'] = intval($requestsusd);
     $arze_rate['TRX'] = intval($requests_tron['Price'] * $arze_rate['USD']);
 
     return $arze_rate;
