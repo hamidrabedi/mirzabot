@@ -569,7 +569,7 @@ function nowPayments($payment, $price_amount, $order_id, $order_description)
         CURLOPT_SSL_VERIFYHOST => 2,
         CURLOPT_POST => true,
         CURLOPT_HTTPHEADER => array(
-            'x-api-key:' . $apinowpayments,
+            'x-api-key: ' . trim((string) $apinowpayments),
             'Content-Type: application/json'
         ),
     ));
@@ -599,7 +599,7 @@ function StatusPayment($paymentid)
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'GET',
         CURLOPT_HTTPHEADER => array(
-            'x-api-key:' . $apinowpayments
+            'x-api-key: ' . trim((string) $apinowpayments)
         ),
     ));
     $response = curl_exec($curl);
@@ -2041,6 +2041,97 @@ function createPayZarinpal($price, $order_id)
     curl_close($curl);
     return json_decode($response, true);
 }
+
+/**
+ * TetraPay — create order (Amount in Rial: Toman * 10).
+ */
+function createPayTetrapay($priceTomans, $hashId, $description, $email, $mobile)
+{
+    global $domainhosts;
+    $apiKey = select("PaySetting", "ValuePay", "NamePay", "apikey_tetrapay", "select")['ValuePay'];
+    $amountRial = (int) $priceTomans * 10;
+    if ($amountRial < 1) {
+        return ['status' => '0', 'error' => 'invalid_amount'];
+    }
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://tetra98.com/api/create_order',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ),
+    ));
+    $defaultEmail = getPaySettingValue('tetrapay_default_email', 'customer@example.com');
+    $defaultMobile = getPaySettingValue('tetrapay_default_mobile', '09120000000');
+    $payload = [
+        'ApiKey' => $apiKey,
+        'Hash_id' => $hashId,
+        'Amount' => $amountRial,
+        'Description' => $description,
+        'Email' => $email !== '' ? $email : $defaultEmail,
+        'Mobile' => $mobile !== '' ? $mobile : $defaultMobile,
+        'CallbackURL' => 'https://' . $domainhosts . '/payment/tetrapay.php',
+    ];
+    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($payload));
+    $response = curl_exec($curl);
+    curl_close($curl);
+    return json_decode($response, true);
+}
+
+/**
+ * TetraPay — verify payment by authority.
+ */
+function verifyTetrapay($authority)
+{
+    $apiKey = select("PaySetting", "ValuePay", "NamePay", "apikey_tetrapay", "select")['ValuePay'];
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://tetra98.com/api/verify',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ),
+    ));
+    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode([
+        'authority' => $authority,
+        'ApiKey' => $apiKey,
+    ]));
+    $response = curl_exec($curl);
+    curl_close($curl);
+    return json_decode($response, true);
+}
+
+function tetrapayVerifySuccess($decoded)
+{
+    if (!is_array($decoded)) {
+        return false;
+    }
+    if (isset($decoded['status'])) {
+        $s = $decoded['status'];
+        if ($s === 100 || $s === '100') {
+            return true;
+        }
+    }
+    if (!empty($decoded['success']) || (isset($decoded['Status']) && ($decoded['Status'] === 100 || $decoded['Status'] === '100'))) {
+        return true;
+    }
+    return false;
+}
+
 function createPayaqayepardakht($price, $order_id)
 {
     global $domainhosts;

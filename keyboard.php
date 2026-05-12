@@ -45,7 +45,8 @@ $datatextbot = array(
     'text_wheel_luck' => '',
     'text_star_telegram' => "",
     'text_extend' => '',
-    'textsnowpayment' => ''
+    'textsnowpayment' => '',
+    'tetrapay' => ''
 
 );
 if ($table_exists) {
@@ -255,6 +256,17 @@ $keyboardzarinpal = json_encode([
     ],
     'resize_keyboard' => true
 ]);
+$keyboardtetrapay = json_encode([
+    'keyboard' => [
+        [['text' => "🗂 نام درگاه تتراپی"],['text' => "کلید API تتراپی"]],
+        [['text' => "📧 ایمیل پیش‌فرض تتراپی"],['text' => "📱 موبایل پیش‌فرض تتراپی"]],
+        [['text' => "💰 کش بک تتراپی"]],
+        [['text' => "⬇️ حداقل مبلغ تتراپی"],['text' => "⬆️ حداکثر مبلغ تتراپی"]],
+        [['text' => "📚 تنظیم آموزش تتراپی"]],
+        [['text' => $textbotlang['Admin']['backadmin']],['text' => $textbotlang['Admin']['backmenu']]]
+    ],
+    'resize_keyboard' => true
+]);
 $aqayepardakht = json_encode([
     'keyboard' => [
         [['text' => "🗂 نام درگاه آقای پرداخت"]],
@@ -301,6 +313,7 @@ $stmt = $pdo->prepare("SELECT * FROM Payment_report WHERE id_user = '$from_id' A
 $stmt->execute();
 $paymentexits = $stmt->rowCount();
 $zarinpal = getPaySettingValue("zarinpalstatus");
+$tetrapaygateway = getPaySettingValue("tetrapaystatus");
 $affilnecurrency = getPaySettingValue("digistatus");
 $arzireyali3 = getPaySettingValue("statusiranpay3");
 $paymentstatussnotverify = getPaySettingValue("paymentstatussnotverify");
@@ -359,6 +372,11 @@ $step_payment = [
     if($zarinpal == "onzarinpal"){
         $step_payment['inline_keyboard'][] = [
             ['text' => $datatextbot['zarinpal'] , 'callback_data' => "zarinpal" ]
+    ];
+    }
+    if($tetrapaygateway == "ontetrapay"){
+        $step_payment['inline_keyboard'][] = [
+            ['text' => $datatextbot['tetrapay'] , 'callback_data' => "tetrapay" ]
     ];
     }
     if($paymentstatussnotverify == "onverifypay"){

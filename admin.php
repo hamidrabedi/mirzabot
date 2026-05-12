@@ -277,6 +277,7 @@ if (in_array($text, $textadmin) || $datain == "admin") {
                 'cart to cart' => $datatextbot['carttocart'],
                 'aqayepardakht' => $datatextbot['aqayepardakht'],
                 'zarinpal' => $datatextbot['zarinpal'],
+                'tetrapay' => $datatextbot['tetrapay'],
                 'plisio' => $datatextbot['textnowpayment'],
                 'arze digital offline' => $datatextbot['textnowpaymenttron'],
                 'Currency Rial 1' => $datatextbot['iranpay2'],
@@ -4221,6 +4222,8 @@ $text_expie_agent
     sendmessage($from_id, $textbotlang['users']['selectoption'], $aqayepardakht, 'HTML');
 } elseif ($datain == "zarinpalsetting" && $adminrulecheck['rule'] == "administrator") {
     sendmessage($from_id, "📌 یک گزینه را انتخاب کنید", $keyboardzarinpal, 'HTML');
+} elseif ($datain == "tetrapaysetting" && $adminrulecheck['rule'] == "administrator") {
+    sendmessage($from_id, "📌 یک گزینه را انتخاب کنید", $keyboardtetrapay, 'HTML');
 } elseif ($text == "تنظیم مرچنت آقای پرداخت" && $adminrulecheck['rule'] == "administrator") {
     $PaySetting = select("PaySetting", "ValuePay", "NamePay", "merchant_id_aqayepardakht")['ValuePay'];
     $textaqayepardakht = "💳 مرچنت کد خود را ازآقای پرداخت دریافت و در این قسمت وارد کنید
@@ -4242,6 +4245,14 @@ $text_expie_agent
 } elseif ($user['step'] == "merchant_zarinpal") {
     sendmessage($from_id, $textbotlang['Admin']['SettingnowPayment']['Savaapi'], $keyboardzarinpal, 'HTML');
     update("PaySetting", "ValuePay", $text, "NamePay", "merchant_zarinpal");
+    step('home', $from_id);
+} elseif ($text == "کلید API تتراپی" && $adminrulecheck['rule'] == "administrator") {
+    $PaySetting = select("PaySetting", "ValuePay", "NamePay", "apikey_tetrapay")['ValuePay'];
+    sendmessage($from_id, "🔑 کلید API تتراپی را از داشبورد TetraPay دریافت و وارد کنید.\n\nکلید فعلی: $PaySetting", $backadmin, 'HTML');
+    step('apikey_tetrapay', $from_id);
+} elseif ($user['step'] == "apikey_tetrapay") {
+    sendmessage($from_id, $textbotlang['Admin']['SettingnowPayment']['Savaapi'], $keyboardtetrapay, 'HTML');
+    update("PaySetting", "ValuePay", $text, "NamePay", "apikey_tetrapay");
     step('home', $from_id);
 } elseif ($text == $textbotlang['Admin']['btnkeyboardadmin']['managementpanel'] && $adminrulecheck['rule'] == "administrator") {
     sendmessage($from_id, $textbotlang['Admin']['managepanel']['getloc'], $json_list_marzban_panel, 'HTML');
@@ -7391,6 +7402,13 @@ if ($datain == "settimecornremove" && $adminrulecheck['rule'] == "administrator"
     sendmessage($from_id, "✅  متن با موفقیت تنظیم گردید.", $keyboardzarinpal, 'HTML');
     update("textbot", "text", $text, "id_text", "zarinpal");
     step("home", $from_id);
+} elseif ($text == "🗂 نام درگاه تتراپی") {
+    sendmessage($from_id, " 📌 نام درگاه را ارسال نمايید", $backadmin, 'HTML');
+    step("gettexttetrapay", $from_id);
+} elseif ($user['step'] == "gettexttetrapay") {
+    sendmessage($from_id, "✅  متن با موفقیت تنظیم گردید.", $keyboardtetrapay, 'HTML');
+    update("textbot", "text", $text, "id_text", "tetrapay");
+    step("home", $from_id);
 } elseif ($text == "⚙️  اینباند اکانت غیرفعال" && $adminrulecheck['rule'] == "administrator") {
     sendmessage($from_id, $textbotlang['Admin']['managepanel']['Inbound']['GetProtocol'], $keyboardprotocol, 'HTML');
     step('getprotocoldisable', $from_id);
@@ -7850,6 +7868,7 @@ if ($datain == "settimecornremove" && $adminrulecheck['rule'] == "administrator"
     $arzireyali3 = getPaySettingValue('statusiranpay3', 'offiranpay3');
     $aqayepardakht = getPaySettingValue('statusaqayepardakht', 'offaqayepardakht');
     $zarinpal = getPaySettingValue('zarinpalstatus', 'offzarinpal');
+    $tetrapay = getPaySettingValue('tetrapaystatus', 'offtetrapay');
     $affilnecurrency = getPaySettingValue('digistatus', 'offdigi');
     $paymentstatussnotverify = getPaySettingValue('paymentstatussnotverify', 'offpaymentstatus');
     $paymentsstartelegram = getPaySettingValue('statusstar', '0');
@@ -7878,6 +7897,10 @@ if ($datain == "settimecornremove" && $adminrulecheck['rule'] == "administrator"
         'onzarinpal' => $textbotlang['Admin']['Status']['statuson'],
         'offzarinpal' => $textbotlang['Admin']['Status']['statusoff']
     ][$zarinpal];
+    $tetrapaystatus = [
+        'ontetrapay' => $textbotlang['Admin']['Status']['statuson'],
+        'offtetrapay' => $textbotlang['Admin']['Status']['statusoff']
+    ][$tetrapay];
     $affilnecurrencystatus = [
         'ondigi' => $textbotlang['Admin']['Status']['statuson'],
         'offdigi' => $textbotlang['Admin']['Status']['statusoff']
@@ -7940,6 +7963,11 @@ if ($datain == "settimecornremove" && $adminrulecheck['rule'] == "administrator"
                 ['text' => "⚙️ تنظیمات", 'callback_data' => "zarinpalsetting"],
                 ['text' => $zarinpalstatus, 'callback_data' => "editpayment-zarinpal-$zarinpal"],
                 ['text' => "🟡 زرین پال", 'callback_data' => "zarinpal"],
+            ],
+            [
+                ['text' => "⚙️ تنظیمات", 'callback_data' => "tetrapaysetting"],
+                ['text' => $tetrapaystatus, 'callback_data' => "editpayment-tetrapay-$tetrapay"],
+                ['text' => "تتراپی", 'callback_data' => "tetrapay"],
             ],
             [
                 ['text' => "⚙️ تنظیمات", 'callback_data' => "affilnecurrencysetting"],
@@ -8038,6 +8066,13 @@ n2", $backadmin, 'HTML');
             $valuenew = "onzarinpal";
         }
         update("PaySetting", "ValuePay", $valuenew, "NamePay", "zarinpalstatus");
+    } elseif ($type == "tetrapay") {
+        if ($value == "ontetrapay") {
+            $valuenew = "offtetrapay";
+        } else {
+            $valuenew = "ontetrapay";
+        }
+        update("PaySetting", "ValuePay", $valuenew, "NamePay", "tetrapaystatus");
     } elseif ($type == "affilnecurrency") {
         if ($value == "ondigi") {
             $valuenew = "offdigi";
@@ -8068,6 +8103,7 @@ n2", $backadmin, 'HTML');
         update("PaySetting", "ValuePay", $valuenew, "NamePay", "statusnowpayment");
     }
     $zarinpal = getPaySettingValue('zarinpalstatus', 'offzarinpal');
+    $tetrapay = getPaySettingValue('tetrapaystatus', 'offtetrapay');
     $cartotcart = getPaySettingValue('Cartstatus', 'offcard');
     $plisio = getPaySettingValue('nowpaymentstatus', 'offnowpayment');
     $arzireyali1 = getPaySettingValue('statusSwapWallet', 'offSwapinoBot');
@@ -8102,6 +8138,10 @@ n2", $backadmin, 'HTML');
         'onzarinpal' => $textbotlang['Admin']['Status']['statuson'],
         'offzarinpal' => $textbotlang['Admin']['Status']['statusoff']
     ][$zarinpal];
+    $tetrapaystatus = [
+        'ontetrapay' => $textbotlang['Admin']['Status']['statuson'],
+        'offtetrapay' => $textbotlang['Admin']['Status']['statusoff']
+    ][$tetrapay];
     $affilnecurrencystatus = [
         'ondigi' => $textbotlang['Admin']['Status']['statuson'],
         'offdigi' => $textbotlang['Admin']['Status']['statusoff']
@@ -8164,6 +8204,11 @@ n2", $backadmin, 'HTML');
                 ['text' => "⚙️ تنظیمات", 'callback_data' => "zarinpalsetting"],
                 ['text' => $zarinpalstatus, 'callback_data' => "editpayment-zarinpal-$zarinpal"],
                 ['text' => "🟡 زرین پال", 'callback_data' => "zarinpal"],
+            ],
+            [
+                ['text' => "⚙️ تنظیمات", 'callback_data' => "tetrapaysetting"],
+                ['text' => $tetrapaystatus, 'callback_data' => "editpayment-tetrapay-$tetrapay"],
+                ['text' => "تتراپی", 'callback_data' => "tetrapay"],
             ],
             [
                 ['text' => "⚙️ تنظیمات", 'callback_data' => "affilnecurrencysetting"],
@@ -8275,6 +8320,17 @@ n2", $backadmin, 'HTML');
     sendmessage($from_id, "✅ مبلغ با موفقیت ذخیره گردید.", $keyboardzarinpal, 'HTML');
     step("home", $from_id);
     update("PaySetting", "ValuePay", $text, "NamePay", "chashbackzarinpal");
+} elseif ($text == "💰 کش بک تتراپی") {
+    sendmessage($from_id, "📌 در این بخش می توانید تعیین کنید کاربر پس از پرداخت چه درصدی به عنوان هدیه به حسابش واریز شود. ( برای غیرفعال کردن این قابلیت عدد صفر ارسال کنید)", $backadmin, 'HTML');
+    step("getcashtetrapay", $from_id);
+} elseif ($user['step'] == "getcashtetrapay") {
+    if (!ctype_digit($text)) {
+        sendmessage($from_id, $textbotlang['Admin']['agent']['invalidvlue'], $backadmin, 'HTML');
+        return;
+    }
+    sendmessage($from_id, "✅ مبلغ با موفقیت ذخیره گردید.", $keyboardtetrapay, 'HTML');
+    step("home", $from_id);
+    update("PaySetting", "ValuePay", $text, "NamePay", "chashbacktetrapay");
 } elseif ($text == "➕ اضافه کردن کانفیگ") {
     $product = [];
     $stmt = $pdo->prepare("SELECT * FROM product WHERE Location = :text or Location = '/all' ");
@@ -8812,6 +8868,44 @@ f,n.n2", $backadmin, 'HTML');
     sendmessage($from_id, "✅ حداکثر مبلغ واریزی تنظیم گردید.", $aqayepardakht, 'HTML');
     step("home", $from_id);
     update("PaySetting", "ValuePay", $text, "NamePay", "maxbalancezarinpal");
+} elseif ($text == "⬇️ حداقل مبلغ تتراپی") {
+    sendmessage($from_id, "📌 حداقل مبلغ واریزی را ارسال نمایید", $backadmin, 'HTML');
+    step("getmainaqtetrapay", $from_id);
+} elseif ($user['step'] == "getmainaqtetrapay") {
+    if (!ctype_digit($text)) {
+        sendmessage($from_id, $textbotlang['Admin']['agent']['invalidvlue'], $backadmin, 'HTML');
+        return;
+    }
+    sendmessage($from_id, "✅ حداقل مبلغ واریزی تنظیم گردید.", $keyboardtetrapay, 'HTML');
+    step("home", $from_id);
+    update("PaySetting", "ValuePay", $text, "NamePay", "minbalancetetrapay");
+} elseif ($text == "⬆️ حداکثر مبلغ تتراپی") {
+    sendmessage($from_id, "📌 حداکثر مبلغ واریزی را ارسال نمایید", $backadmin, 'HTML');
+    step("getmaxtetrapay", $from_id);
+} elseif ($user['step'] == "getmaxtetrapay") {
+    if (!ctype_digit($text)) {
+        sendmessage($from_id, $textbotlang['Admin']['agent']['invalidvlue'], $backadmin, 'HTML');
+        return;
+    }
+    sendmessage($from_id, "✅ حداکثر مبلغ واریزی تنظیم گردید.", $keyboardtetrapay, 'HTML');
+    step("home", $from_id);
+    update("PaySetting", "ValuePay", $text, "NamePay", "maxbalancetetrapay");
+} elseif ($text == "📧 ایمیل پیش‌فرض تتراپی") {
+    $cur = getPaySettingValue('tetrapay_default_email', 'customer@example.com');
+    sendmessage($from_id, "📧 ایمیل پیش‌فرض برای ایجاد سفارش (در صورت نبود ایمیل کاربر).\n\nفعلی: $cur", $backadmin, 'HTML');
+    step('tetrapay_default_email_step', $from_id);
+} elseif ($user['step'] == "tetrapay_default_email_step") {
+    sendmessage($from_id, "✅ ذخیره شد.", $keyboardtetrapay, 'HTML');
+    update("PaySetting", "ValuePay", $text, "NamePay", "tetrapay_default_email");
+    step('home', $from_id);
+} elseif ($text == "📱 موبایل پیش‌فرض تتراپی") {
+    $cur = getPaySettingValue('tetrapay_default_mobile', '09120000000');
+    sendmessage($from_id, "📱 شماره پیش‌فرض در صورت نامعتبر بودن شماره کاربر در ربات.\n\nفعلی: $cur", $backadmin, 'HTML');
+    step('tetrapay_default_mobile_step', $from_id);
+} elseif ($user['step'] == "tetrapay_default_mobile_step") {
+    sendmessage($from_id, "✅ ذخیره شد.", $keyboardtetrapay, 'HTML');
+    update("PaySetting", "ValuePay", $text, "NamePay", "tetrapay_default_mobile");
+    step('home', $from_id);
 } elseif ($datain == "walletaddress") {
     $PaySetting = select("PaySetting", "ValuePay", "NamePay", "walletaddress", "select");
     $texttronseller = "💳 آدرس ولت ترون trc20 خود را ارسال کنید
@@ -9342,6 +9436,42 @@ f,n.n2", $backadmin, 'HTML');
     }
     step('home', $from_id);
     sendmessage($from_id, "✅ آموزش با موفقیت ذخیره گردید.", $CartManage, 'HTML');
+} elseif ($text == "📚 تنظیم آموزش تتراپی" && $adminrulecheck['rule'] == "administrator") {
+    sendmessage($from_id, "📌آموزش خود را ارسال نمایید .
+۱ - در صورتی که میخواید اموزشی نشان داده نشود عدد 2 را ارسال کنید
+۲ - شما می توانید آموزش بصورت فیلم ُ  متن ُ تصویر ارسال نمایید", $backadmin, 'HTML');
+    step("helptetrapay", $from_id);
+} elseif ($user['step'] == "helptetrapay") {
+    if ($text) {
+        if (intval($text) == 2) {
+            update("PaySetting", "ValuePay", "2", "NamePay", "helptetrapay");
+        } else {
+            $data = json_encode(array(
+                'type' => "text",
+                'text' => $text
+            ));
+            update("PaySetting", "ValuePay", $data, "NamePay", "helptetrapay");
+        }
+    } elseif ($photo) {
+        $data = json_encode(array(
+            'type' => "photo",
+            'text' => $caption,
+            'photoid' => $photoid
+        ));
+        update("PaySetting", "ValuePay", $data, "NamePay", "helptetrapay");
+    } elseif ($video) {
+        $data = json_encode(array(
+            'type' => "video",
+            'text' => $caption,
+            'videoid' => $videoid
+        ));
+        update("PaySetting", "ValuePay", $data, "NamePay", "helptetrapay");
+    } else {
+        sendmessage($from_id, "❌ محتوای ارسال نامعتبر است.", $backadmin, 'HTML');
+        return;
+    }
+    step('home', $from_id);
+    sendmessage($from_id, "✅ آموزش با موفقیت ذخیره گردید.", $keyboardtetrapay, 'HTML');
 } elseif ($text == "📚 تنظیم آموزش  ارزی افلاین" && $adminrulecheck['rule'] == "administrator") {
     sendmessage($from_id, "📌آموزش خود را ارسال نمایید .
 ۱ - در صورتی که میخواید اموزشی نشان داده نشود عدد 2 را ارسال کنید

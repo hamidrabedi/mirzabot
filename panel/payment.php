@@ -82,6 +82,7 @@ if( !isset($_SESSION["user"]) || !$result ){
                                         "Currency Rial 3"	 => "درگاه ارزی ریالی سوم",
                                         "aqayepardakht" => "درگاه اقای پرداخت",
                                         "zarinpal" => "زرین پال",
+                                        "tetrapay" => "تتراپی",
                                         "plisio" => "درکاه ارزی plisio",
                                         'arze digital offline' => "درگاه ارزی آفلاین",
                                         'Star Telegram' => "استار تلگرام",
