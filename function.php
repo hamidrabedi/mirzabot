@@ -733,31 +733,6 @@ function outputlink($text)
 
     curl_close($ch);
 }
-function outputlinksub($url)
-{
-    $ch = curl_init();
-    var_dump($url);
-    curl_setopt($ch, CURLOPT_URL, "$url/info");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT_MS, 6000);
-    $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
-    curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-
-
-    $headers = array();
-    $headers[] = 'Accept: application/json';
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-    $result = curl_exec($ch);
-    if (curl_errno($ch)) {
-        echo 'Error:' . curl_error($ch);
-    }
-    return $result;
-    curl_close($ch);
-}
 function DirectPayment($order_id, $image = 'images.jpg')
 {
     global $pdo, $ManagePanel, $textbotlang, $keyboardextendfnished, $keyboard, $Confirm_pay, $from_id, $message_id, $datatextbot;
@@ -1764,32 +1739,6 @@ function createInvoiceiranpay1($amount, $id_invoice)
     curl_close($curl);
     return json_decode($response, true);
 }
-function verifyxvoocher($code)
-{
-    $PaySetting = select("PaySetting", "*", "NamePay", "apiiranpay", "select")['ValuePay'];
-    $curl = curl_init();
-
-    curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://bot.donatekon.com/api/transaction/verify/" . $code,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => '',
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => 'GET',
-        CURLOPT_HTTPHEADER => array(
-            'accept: application/json',
-            'Content-Type: application/json',
-            'Authorization: ' . $PaySetting
-        ),
-    ));
-
-    $response = curl_exec($curl);
-    return json_decode($response, true);
-
-    curl_close($curl);
-}
 function sanitizeUserName($userName)
 {
     $forbiddenCharacters = [
@@ -1892,35 +1841,6 @@ function check_active_btn($keyboard, $text_var)
         }
     }
     return $status;
-}
-function CreatePaymentNv($invoice_id, $amount)
-{
-    global $domainhosts;
-    $PaySetting = select("PaySetting", "ValuePay", "NamePay", "marchentpaynotverify", "select")['ValuePay'];
-    $data = [
-        'api_key' => $PaySetting,
-        'amount' => $amount,
-        'callback_url' => "https://" . $domainhosts . "/payment/paymentnv/back.php",
-        'desc' => $invoice_id
-    ];
-    $data = json_encode($data);
-    $ch = curl_init("https://donatekon.com/pay/api/dargah/create");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-
-    curl_setopt(
-        $ch,
-        CURLOPT_HTTPHEADER,
-        array(
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($data)
-        )
-    );
-    $result = curl_exec($ch);
-    curl_close($ch);
-    return json_decode($result, true);
 }
 function deleteFolder($folderPath)
 {
