@@ -42,7 +42,6 @@ function get_userwg($username, $namepanel)
             break;
         }
     }
-    curl_close($curl);
     return $output;
 }
 
@@ -265,6 +264,5 @@ function restrictPeers($location, $username)
         ),
     ));
     $response = json_decode(curl_exec($curl), true);
-    curl_close($curl);
     return $response;
 }
