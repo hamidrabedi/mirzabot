@@ -417,7 +417,7 @@ try {
         addFieldToTable("marzban_panel", "version_panel", "0", "VARCHAR(60)");
         $max_stmt = $connect->query("SELECT MAX(CAST(SUBSTRING(code_panel, 3) AS UNSIGNED)) as max_num FROM marzban_panel WHERE code_panel LIKE '7e%'");
         $max_row = $max_stmt->fetch_assoc();
-        $next_num = $max_row['max_num'] ? (int)$max_row['max_num'] + 1 : 15;
+        $next_num = $max_row['max_num'] ? (int) $max_row['max_num'] + 1 : 15;
         $stmt = $connect->query("SELECT id FROM marzban_panel WHERE code_panel IS NULL OR code_panel = ''");
         while ($row = $stmt->fetch_assoc()) {
             $code = '7e' . $next_num;
@@ -1489,6 +1489,16 @@ $connect->query("ALTER TABLE `invoice` CHANGE `time_sell` `time_sell` VARCHAR(20
 $connect->query("ALTER TABLE marzban_panel MODIFY name_panel VARCHAR(255) COLLATE utf8mb4_bin");
 $connect->query("ALTER TABLE product MODIFY name_product VARCHAR(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin");
 $connect->query("ALTER TABLE help MODIFY name_os VARCHAR(500) COLLATE utf8mb4_bin");
+try {
+    $check = $pdo->query("SHOW COLUMNS FROM `user` LIKE 'ref_code'");
+} catch (Exception $e) {
+    error_log("[CHECK:$tableName] ❌ " . $e->getMessage());
+    exit;
+}
+
+if ($check && $check->rowCount() != 0) {
+    $pdo->exec("ALTER TABLE `user` DROP `ref_code`");
+}
 telegram('setwebhook', [
     'url' => "https://$domainhosts/index.php"
 ]);
