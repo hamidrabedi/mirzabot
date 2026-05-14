@@ -1468,7 +1468,7 @@ function KeyboardProduct($location, $query, $pricediscount, $datakeyboard, $stat
         if (in_array($location, $hide_panel))
             continue;
         $stmts2 = $pdo->prepare("SELECT * FROM invoice WHERE Status != 'Unpaid' AND id_user = :id_user");
-        $stmt->bindValue(':id_user', $from_id);
+        $stmts2->bindValue(':id_user', $from_id);
         $stmts2->execute();
         $countorder = $stmts2->rowCount();
         if ($result['one_buy_status'] == "1" && $countorder != 0)
