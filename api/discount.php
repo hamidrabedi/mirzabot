@@ -69,7 +69,7 @@ function validateToken($headers)
     if (is_file('hash.txt')) {
         $token = file_get_contents('hash.txt');
     } else {
-        $token = "";
+        return false;
     }
     $validTokens = [$token, $APIKEY];
     return in_array($headers['Token'], $validTokens, true);
@@ -330,10 +330,10 @@ switch ($data['actions'] ?? '') {
 
         try {
             $discount = select("DiscountSell", "*", "id", $data['id'], "select");
-            if($discount['code_product'] != "all")
-             $discount['code_product'] = select('product',"*","code_product",$discount['code_product'],"select")['name_product'];
-            if($discount['code_panel'] != "/all")
-             $discount['code_panel'] = select('marzban_panel',"*","code_panel",$discount['code_panel'],"select")['name_panel'];
+            if ($discount['code_product'] != "all")
+                $discount['code_product'] = select('product', "*", "code_product", $discount['code_product'], "select")['name_product'];
+            if ($discount['code_panel'] != "/all")
+                $discount['code_panel'] = select('marzban_panel', "*", "code_panel", $discount['code_panel'], "select")['name_panel'];
             if (!$discount) {
                 sendJsonResponse(true, "Successful", [
                     'discount' => [],

@@ -25,7 +25,6 @@ function panel_login_cookie($code_panel)
             'msg' => curl_error($curl)
         ));
     }
-    curl_close($curl);
     return $response;
 }
 function login($code_panel, $verify = true)

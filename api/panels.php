@@ -69,7 +69,7 @@ function validateToken($headers)
     if (is_file('hash.txt')) {
         $token = file_get_contents('hash.txt');
     } else {
-        $token = "";
+        return false;
     }
     $validTokens = [$token, $APIKEY];
     return in_array($headers['Token'], $validTokens, true);
@@ -200,7 +200,7 @@ switch ($data['actions'] ?? '') {
                     'panel' => [],
                 ]);
             }
-            $panel['hide_panel'] = json_decode($panel['hide_panel'],true);
+            $panel['hide_panel'] = json_decode($panel['hide_panel'], true);
             sendJsonResponse(true, "Successful", [
                 'panel' => $panel,
                 'category' => $category,

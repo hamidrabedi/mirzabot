@@ -15,31 +15,31 @@ $headers = getallheaders();
 $setting = select("setting", "*");
 $method = $_SERVER['REQUEST_METHOD'];
 $datatextbotget = select("textbot", "*", null, null, "fetchAll");
-        $datatxtbot = array();
-        foreach ($datatextbotget as $row) {
-            $datatxtbot[] = array(
-                'id_text' => $row['id_text'],
-                'text' => $row['text']
-            );
-        }
-        $datatextbot = array(
-            'textafterpay' => '',
-            'textaftertext' => '',
-            'textmanual' => '',
-            'textselectlocation' => '',
-            'textafterpayibsng' => ''
-        );
-        foreach ($datatxtbot as $item) {
-            if (isset($datatextbot[$item['id_text']])) {
-                $datatextbot[$item['id_text']] = $item['text'];
-            }
-        }
+$datatxtbot = array();
+foreach ($datatextbotget as $row) {
+    $datatxtbot[] = array(
+        'id_text' => $row['id_text'],
+        'text' => $row['text']
+    );
+}
+$datatextbot = array(
+    'textafterpay' => '',
+    'textaftertext' => '',
+    'textmanual' => '',
+    'textselectlocation' => '',
+    'textafterpayibsng' => ''
+);
+foreach ($datatxtbot as $item) {
+    if (isset($datatextbot[$item['id_text']])) {
+        $datatextbot[$item['id_text']] = $item['text'];
+    }
+}
 if ($method == "GET") {
     $data = array(
         'actions' => $_GET['actions'],
-        'user_id' => isset($_GET['user_id']) && is_numeric($_GET['user_id']) ? (int)$_GET['user_id'] : 0,
-        'page' => isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1,
-        'limit' => isset($_GET['limit']) && is_numeric($_GET['limit']) && $_GET['limit'] > 0 ? (int)$_GET['limit'] : 10,
+        'user_id' => isset($_GET['user_id']) && is_numeric($_GET['user_id']) ? (int) $_GET['user_id'] : 0,
+        'page' => isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int) $_GET['page'] : 1,
+        'limit' => isset($_GET['limit']) && is_numeric($_GET['limit']) && $_GET['limit'] > 0 ? (int) $_GET['limit'] : 10,
         'q' => isset($_GET['q']) && is_string($_GET['q']) ? $_GET['q'] : null,
         'username' => isset($_GET['username']) && is_string($_GET['username']) ? $_GET['username'] : null,
         'id_panel' => isset($_GET['country_id']) && is_string($_GET['country_id']) ? $_GET['country_id'] : "",
@@ -92,17 +92,23 @@ switch ($data['actions']) {
             return;
         }
         $limit = $data['limit'];
-        if ($limit > 10) $limit = 10;
+        if ($limit > 10)
+            $limit = 10;
         $page = $data['page'];
-        $user_id =  $data['user_id'];
+        $user_id = $data['user_id'];
         $username = $data['q'];
         $offset = ($page - 1) * $limit;
         if ($username != null) {
-            $querywhere = " AND username LIKE '%$username%'";
+            $querywhere = " AND username LIKE :username";
         } else {
             $querywhere = "";
         }
-        $countStmt = $pdo->prepare("SELECT COUNT(*) as total FROM invoice WHERE id_user = '$user_id' AND (status = 'active' OR status = 'end_of_time'  OR status = 'end_of_volume' OR status = 'sendedwarn' OR Status = 'send_on_hold') $querywhere");
+        $countStmt = $pdo->prepare("SELECT COUNT(*) as total FROM invoice WHERE id_user = :user_id AND (status = 'active' OR status = 'end_of_time'  OR status = 'end_of_volume' OR status = 'sendedwarn' OR Status = 'send_on_hold') $querywhere");
+        $countStmt->bindValue(':user_id', $user_id);
+        if ($username != null) {
+            $username = "%$username%";
+            $countStmt->bindValue(':username', $username, PDO::PARAM_STR);
+        }
         $countStmt->execute();
         $totalItems = $countStmt->fetchColumn();
         $totalPages = ceil($totalItems / $limit);
@@ -110,6 +116,10 @@ switch ($data['actions']) {
         $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        if ($username != null) {
+            $username = "%$username%";
+            $stmt->bindValue(':username', $username, PDO::PARAM_STR);
+        }
         $stmt->execute();
         $invoices = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $datauser = [];
@@ -149,7 +159,7 @@ switch ($data['actions']) {
             ]);
             return;
         }
-        $user_id =  $data['user_id'];
+        $user_id = $data['user_id'];
         $username = $data['username'];
         $stmt = $pdo->prepare("SELECT * FROM invoice WHERE id_user = :user_id AND (status = 'active' OR status = 'end_of_time'  OR status = 'end_of_volume' OR status = 'sendedwarn' OR Status = 'send_on_hold') AND username = :username");
         $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
@@ -177,8 +187,8 @@ switch ($data['actions']) {
                 ]);
                 return;
             }
-            $data_limit_bytes = is_numeric($DataUserOut['data_limit']) ? (float)$DataUserOut['data_limit'] : 0;
-            $used_traffic_bytes = is_numeric($DataUserOut['used_traffic']) ? (float)$DataUserOut['used_traffic'] : 0;
+            $data_limit_bytes = is_numeric($DataUserOut['data_limit']) ? (float) $DataUserOut['data_limit'] : 0;
+            $used_traffic_bytes = is_numeric($DataUserOut['used_traffic']) ? (float) $DataUserOut['used_traffic'] : 0;
             $remaining_traffic_bytes = max($data_limit_bytes - $used_traffic_bytes, 0);
             $data_limit = $data_limit_bytes / pow(1024, 3);
             $used_Traffic = $used_traffic_bytes / pow(1024, 3);
@@ -209,7 +219,7 @@ switch ($data['actions']) {
                     'value' => $DataUserOut['password'] ?? ''
                 ];
             }
-            if (isset($DataUserOut['sub_updated_at']) && $DataUserOut['sub_updated_at']  !== null) {
+            if (isset($DataUserOut['sub_updated_at']) && $DataUserOut['sub_updated_at'] !== null) {
                 $sub_updated = $DataUserOut['sub_updated_at'];
                 $dateTime = new DateTime($sub_updated, new DateTimeZone('UTC'));
                 $dateTime->setTimezone(new DateTimeZone('Asia/Tehran'));
@@ -231,7 +241,7 @@ switch ($data['actions']) {
                     $lastonline = "متصل نشده";
                 }
             }
-            $expireTimestamp = isset($DataUserOut['expire']) && is_numeric($DataUserOut['expire']) ? (int)$DataUserOut['expire'] : 0;
+            $expireTimestamp = isset($DataUserOut['expire']) && is_numeric($DataUserOut['expire']) ? (int) $DataUserOut['expire'] : 0;
             $expirationDate = $expireTimestamp ? jdate('Y/m/d', $expireTimestamp) : 'نامحدود';
             $usernameOutput = $DataUserOut['username'] ?? $invoice['username'];
             echo json_encode([
@@ -293,7 +303,7 @@ switch ($data['actions']) {
             ]);
             $countpayment = $stmt->rowCount();
             $groupuser = [
-                'f' =>  "عادی",
+                'f' => "عادی",
                 'n' => "نماینده",
                 'n2' => "نمایندگی پیشرفته",
             ][$user_info['agent']];
@@ -335,10 +345,13 @@ switch ($data['actions']) {
             $stmt->bindParam(':agent', $user_info['agent']);
             $stmt->execute();
             $panel_list = [];
-            $setting = select("setting", "*", null, null, "select");;
+            $setting = select("setting", "*", null, null, "select");
+            ;
             $is_note = false;
-            if ($setting['statusnamecustom'] == 'onnamecustom') $is_note = true;
-            if ($setting['statusnoteforf'] == "0" && $user_info['agent'] == "f") $is_note = false;
+            if ($setting['statusnamecustom'] == 'onnamecustom')
+                $is_note = true;
+            if ($setting['statusnoteforf'] == "0" && $user_info['agent'] == "f")
+                $is_note = false;
             while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 if ($result['MethodUsername'] == $textbotlang['users']['customusername'] || $result['MethodUsername'] == "نام کاربری دلخواه + عدد رندوم") {
                     $is_username = true;
@@ -351,7 +364,8 @@ switch ($data['actions']) {
                 } else {
                     $is_custom = false;
                 }
-                if ($result['hide_user'] != null && in_array($user_info['id'], json_decode($result['hide_user'], true))) continue;
+                if ($result['hide_user'] != null && in_array($user_info['id'], json_decode($result['hide_user'], true)))
+                    continue;
                 $panel_list[] = [
                     'id' => $result['code_panel'],
                     'name' => $result['name_panel'],
@@ -409,7 +423,8 @@ switch ($data['actions']) {
                 $stmts->bindParam(':category', $result['remark'], PDO::PARAM_STR);
                 $stmts->bindParam(':agent', $user_info['agent']);
                 $stmts->execute();
-                if ($stmts->rowCount() == 0) continue;
+                if ($stmts->rowCount() == 0)
+                    continue;
                 $category_list[] = [
                     'id' => $result['id'],
                     'name' => $result['remark'],
@@ -456,7 +471,9 @@ switch ($data['actions']) {
                 ));
                 return;
             }
-            $stmt = $pdo->prepare("SELECT (Service_time) FROM product WHERE (Location = '{$panel['name_panel']}' OR Location = '/all') AND  agent = '{$user_info['agent']}'");
+            $stmt = $pdo->prepare("SELECT (Service_time) FROM product WHERE (Location = :name_panel OR Location = '/all') AND  agent = :agent");
+            $stmt->bindValue(':agent', $user_info['agent'], PDO::PARAM_STR);
+            $stmt->bindValue(':name_panel', $panel['name_panel'], PDO::PARAM_STR);
             $stmt->execute();
             $montheproduct = array_flip(array_flip($stmt->fetchAll(PDO::FETCH_COLUMN)));
             if (in_array("1", $montheproduct)) {
@@ -547,14 +564,14 @@ switch ($data['actions']) {
                 $category_time_list[] = array(
                     'id' => 0,
                     'name' => $textbotlang['Admin']['month']['365'],
-                    'day' =>  365
+                    'day' => 365
                 );
             }
             if (in_array("0", $montheproduct)) {
                 $category_time_list[] = array(
                     'id' => 0,
                     'name' => $textbotlang['Admin']['month']['unlimited'],
-                    'day' =>  0
+                    'day' => 0
                 );
             }
             echo json_encode([
@@ -613,11 +630,13 @@ switch ($data['actions']) {
                 if (!is_array($hide_panel)) {
                     $hide_panel = [];
                 }
-                if (in_array($panel['name_panel'], $hide_panel)) continue;
+                if (in_array($panel['name_panel'], $hide_panel))
+                    continue;
                 $stmts2 = $pdo->prepare("SELECT * FROM invoice WHERE Status != 'Unpaid' AND id_user = '{$user_info['id']}'");
                 $stmts2->execute();
                 $countorder = $stmts2->rowCount();
-                if ($result['one_buy_status'] == "1" && $countorder != 0) continue;
+                if ($result['one_buy_status'] == "1" && $countorder != 0)
+                    continue;
                 if (intval($user_info['pricediscount']) != 0) {
                     $resultper = ($result['price_product'] * $user_info['pricediscount']) / 100;
                     $result['price_product'] = $result['price_product'] - $resultper;
@@ -810,7 +829,7 @@ switch ($data['actions']) {
             'time' => false,
         ));
         $stmt = $connect->prepare("INSERT IGNORE INTO invoice (id_user, id_invoice, username,time_sell, Service_location, name_product, price_product, Volume, Service_time,Status,note,refral,notifctions) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)");
-        $Status =  "active";
+        $Status = "active";
         $date = time();
         $data['custom_note'] = strval($data['custom_note']) <= 1 ? null : $data['custom_note'];
         $stmt->bind_param("sssssssssssss", $user_info['id'], $randomString, $username_ac, $date, $panel['name_panel'], $product['name_product'], $product['price_product'], $product['Volume_constraint'], $product['Service_time'], $Status, $data['custom_note'], $user_info['affiliates'], $notifctions);
@@ -863,10 +882,12 @@ switch ($data['actions']) {
         }
         error_log(json_encode($datatextbotget));
         $datatextbot['textafterpay'] = $panel['type'] == "Manualsale" ? $datatextbot['textmanual'] : $datatextbot['textafterpay'];
-        $datatextbot['textafterpay'] = $panel['type'] == "WGDashboard" ? $datatextbot['text_wgdashboard'] :  $datatextbot['textafterpay'];
+        $datatextbot['textafterpay'] = $panel['type'] == "WGDashboard" ? $datatextbot['text_wgdashboard'] : $datatextbot['textafterpay'];
         $datatextbot['textafterpay'] = $panel['type'] == "ibsng" || $panel['type'] == "mikrotik" ? $datatextbot['textafterpayibsng'] : $datatextbot['textafterpay'];
-        if (intval($product['Service_time']) == 0) $product['Service_time'] = $textbotlang['users']['stateus']['Unlimited'];
-        if (intval($product['Volume_constraint']) == 0) $product['Volume_constraint'] = $textbotlang['users']['stateus']['Unlimited'];
+        if (intval($product['Service_time']) == 0)
+            $product['Service_time'] = $textbotlang['users']['stateus']['Unlimited'];
+        if (intval($product['Volume_constraint']) == 0)
+            $product['Volume_constraint'] = $textbotlang['users']['stateus']['Unlimited'];
         $textcreatuser = str_replace('{username}', "<code>{$dataoutput['username']}</code>", $datatextbot['textafterpay']);
         $textcreatuser = str_replace('{name_service}', $product['name_product'], $textcreatuser);
         $textcreatuser = str_replace('{location}', $panel['name_panel'], $textcreatuser);
@@ -880,11 +901,11 @@ switch ($data['actions']) {
             $Balance_prim = $user_info['Balance'] - $product['price_product'];
             update("user", "Balance", $Balance_prim, "id", $user_info['id']);
         }
-        if ($panel['MethodUsername'] == "متن دلخواه + عدد ترتیبی" || $panel['MethodUsername'] == "نام کاربری + عدد به ترتیب" || $panel['MethodUsername'] == "آیدی عددی+عدد ترتیبی" || $panel['MethodUsername']  == "متن دلخواه نماینده + عدد ترتیبی") {
-            $value  = intval($user_info['number_username']) + 1;
+        if ($panel['MethodUsername'] == "متن دلخواه + عدد ترتیبی" || $panel['MethodUsername'] == "نام کاربری + عدد به ترتیب" || $panel['MethodUsername'] == "آیدی عددی+عدد ترتیبی" || $panel['MethodUsername'] == "متن دلخواه نماینده + عدد ترتیبی") {
+            $value = intval($user_info['number_username']) + 1;
             update("user", "number_username", $value, "id", $user_info['id']);
-            if ($panel['MethodUsername'] == "متن دلخواه + عدد ترتیبی" || $panel['MethodUsername']  == "متن دلخواه نماینده + عدد ترتیبی") {
-                $value  = intval($setting['numbercount']) + 1;
+            if ($panel['MethodUsername'] == "متن دلخواه + عدد ترتیبی" || $panel['MethodUsername'] == "متن دلخواه نماینده + عدد ترتیبی") {
+                $value = intval($setting['numbercount']) + 1;
                 update("setting", "numbercount", $value);
             }
         }

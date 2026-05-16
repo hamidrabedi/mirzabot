@@ -3115,7 +3115,7 @@ $caption";
         sendmessage($from_id, $texterror, null, 'HTML');
         return;
     }
-    if ($errorreport != $createForumTopic['result']['message_thread_id']) {
+    if ($otherreport != $createForumTopic['result']['message_thread_id']) {
         update("topicid", "idreport", $createForumTopic['result']['message_thread_id'], "report", "otherreport");
     }
     $createForumTopic = telegram('createForumTopic', [
@@ -4415,7 +4415,6 @@ $text_expie_agent
         } else {
             $free_hdd_space = round($result['free-hdd-space'] / pow(1024, 3), 2);
             $free_memory = round($result['free-memory'] / pow(1024, 3), 2);
-            $free_memory = round($result['free-memory'] / pow(1024, 3), 2);
             $total_hdd_space = round($result['total-hdd-space'] / pow(1024, 3), 2);
             $total_memory = round($result['total-memory'] / pow(1024, 3), 2);
             sendmessage($from_id, "<b>📡 اطلاعات سیستم MikroTik شما:</b>
@@ -5584,7 +5583,7 @@ $iduser  در ربات  رفع مسدود گردید
 } elseif ($user['step'] == "gettypecodeagent") {
     $agentst = ["n", "n2", "f", "allusers"];
     if (!in_array($text, $agentst)) {
-        sendmessage($from_id, $textbotlang['Admin']['Discount']['invalidagentcode'], $bakcadmin, 'HTML');
+        sendmessage($from_id, $textbotlang['Admin']['Discount']['invalidagentcode'], $backadmin, 'HTML');
         return;
     }
     savedata("save", "agent", $text);
@@ -5911,7 +5910,7 @@ n2", $backadmin, 'HTML');
 } elseif ($user['step'] == "getagentbalancemin") {
     $agentst = ["n", "n2", "f", "allusers"];
     if (!in_array($text, $agentst)) {
-        sendmessage($from_id, $textbotlang['Admin']['Discount']['invalidagentcode'], $bakcadmin, 'HTML');
+        sendmessage($from_id, $textbotlang['Admin']['Discount']['invalidagentcode'], $backadmin, 'HTML');
         return;
     }
     step('home', $from_id);
@@ -5939,7 +5938,7 @@ n2", $backadmin, 'HTML');
 } elseif ($user['step'] == "getagentbalancemax") {
     $agentst = ["n", "n2", "f", "allusers"];
     if (!in_array($text, $agentst)) {
-        sendmessage($from_id, $textbotlang['Admin']['Discount']['invalidagentcode'], $bakcadmin, 'HTML');
+        sendmessage($from_id, $textbotlang['Admin']['Discount']['invalidagentcode'], $backadmin, 'HTML');
         return;
     }
     step('home', $from_id);
@@ -6221,7 +6220,8 @@ n2", $backadmin, 'HTML');
     ];
     $keyboard_json = json_encode($keyboardlists);
     sendmessage($from_id, $text_order, $keyboard_json, 'HTML');
-    $stmt = $pdo->prepare("SELECT * FROM service_other s WHERE username = '$usernameconfig' AND (status = 'paid' OR status IS NULL)");
+    $stmt = $pdo->prepare("SELECT * FROM service_other s WHERE username = :username AND (status = 'paid' OR status IS NULL)");
+    $stmt->bindParam(':username', $usernameconfig, PDO::PARAM_STR);
     $stmt->execute();
     $list_service = $stmt->fetchAll();
     if ($list_service) {
@@ -9264,7 +9264,7 @@ f,n.n2", $backadmin, 'HTML');
 } elseif ($user['step'] == "gethelpiranpay1") {
     if ($text) {
         if (intval($text) == 2) {
-            update("PaySetting", "ValuePay", "0", "NamePay", "helpcart");
+            update("PaySetting", "ValuePay", "0", "NamePay", "helpiranpay1");
         } else {
             $data = json_encode(array(
                 'type' => "text",
@@ -9372,7 +9372,7 @@ f,n.n2", $backadmin, 'HTML');
 } elseif ($user['step'] == "helpaqayepardakht") {
     if ($text) {
         if (intval($text) == 2) {
-            update("PaySetting", "ValuePay", "0", "NamePay", "helpcart");
+            update("PaySetting", "ValuePay", "0", "NamePay", "helpaqayepardakht");
         } else {
             $data = json_encode(array(
                 'type' => "text",
@@ -9408,7 +9408,7 @@ f,n.n2", $backadmin, 'HTML');
 } elseif ($user['step'] == "helpzarinpal") {
     if ($text) {
         if (intval($text) == 2) {
-            update("PaySetting", "ValuePay", "0", "NamePay", "helpcart");
+            update("PaySetting", "ValuePay", "0", "NamePay", "helpzarinpal");
         } else {
             $data = json_encode(array(
                 'type' => "text",
@@ -9994,7 +9994,7 @@ elseif ($text == "🫣 مخفی کردن پنل برای یک کاربر" && $ad
     } elseif ($marzban_list_get['type'] == "x-ui_single" || $marzban_list_get['type'] == "alireza_single") {
         $datainbound = $text;
     } elseif ($marzban_list_get['type'] == "s_ui") {
-        $data = GetClientsS_UI($text, $panel['name_panel']);
+        $data = GetClientsS_UI($text, $marzban_list_get['name_panel']);
         if (count($data) == 0) {
             sendmessage($from_id, "❌ یوزر در پنل وجود ندارد.", $options_ui, 'HTML');
             return;

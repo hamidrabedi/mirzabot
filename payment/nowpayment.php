@@ -9,9 +9,9 @@ require_once __DIR__ . '/../jdf.php';
 require __DIR__ . '/../vendor/autoload.php';
 $ManagePanel = new ManagePanel();
 $setting = select("setting", "*");
-$paymentreports = select("topicid","idreport","report","paymentreport","select")['idreport'];
-$datatextbotget = select("textbot", "*",null ,null ,"fetchAll");
-    $datatxtbot = array();
+$paymentreports = select("topicid", "idreport", "report", "paymentreport", "select")['idreport'];
+$datatextbotget = select("textbot", "*", null, null, "fetchAll");
+$datatxtbot = array();
 foreach ($datatextbotget as $row) {
     $datatxtbot[] = array(
         'id_text' => $row['id_text'],
@@ -102,13 +102,13 @@ if ($Payment_report['payment_Status'] == "paid") {
     exit;
 }
 
-DirectPayment($Payment_report['id_order'],"../images.jpg");
-$pricecashback = select("PaySetting", "ValuePay", "NamePay", "cashbacknowpayment","select")['ValuePay'];
-$Balance_id = select("user","*","id",$Payment_report['id_user'],"select");
-if($pricecashback != "0"){
+DirectPayment($Payment_report['id_order'], "../images.jpg");
+$pricecashback = select("PaySetting", "ValuePay", "NamePay", "cashbacknowpayment", "select")['ValuePay'];
+$Balance_id = select("user", "*", "id", $Payment_report['id_user'], "select");
+if ($pricecashback != "0") {
     $result = ($Payment_report['price'] * $pricecashback) / 100;
     $Balance_confrim = intval($Balance_id['Balance']) + $result;
-    update("user","Balance",$Balance_confrim, "id",$Balance_id['id']);
+    update("user", "Balance", $Balance_confrim, "id", $Balance_id['id']);
     $pricecashback = number_format($pricecashback);
     $text_report = "🎁 کاربر عزیز مبلغ $result تومان به عنوان هدیه واریز به حساب شما واریز گردید.";
     sendmessage($Balance_id['id'], $text_report, null, 'HTML');
@@ -130,13 +130,13 @@ $text_reportpayment = "💵 پرداخت جدید
 - 📥 مبلغ واریز شده ترون. : {$actuallyPaid}
 - 💳 روش پرداخت :  nowpayment";
 if (strlen($setting['Channel_Report']) > 0) {
-    telegram('sendmessage',[
+    telegram('sendmessage', [
         'chat_id' => $setting['Channel_Report'],
         'message_thread_id' => $paymentreports,
         'text' => $text_reportpayment,
         'parse_mode' => "HTML"
     ]);
 }
-update("Payment_report","payment_Status","paid","id_order",$Payment_report['id_order']);
+update("Payment_report", "payment_Status", "paid", "id_order", $Payment_report['id_order']);
 
 echo 'OK';
